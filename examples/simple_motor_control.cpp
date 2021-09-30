@@ -1,3 +1,20 @@
+/**
+ * @file simple_motor_control.cpp
+ * @author Navneet Kaur (navneet.kaur@iitgn.ac.in)
+ * @brief Example for controlling a motor attached with a rotary encoder
+ * to achieve the target velocity using the MotorController class.
+ * 
+ * This example can run on both NodeMCU ESP8266
+ * and Arduino AVR / ATmega boards,
+ * subject to the availability of interrupt pins.
+ * 
+ * @version 0.1
+ * @date 2021-06-26
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include <Arduino.h>
 
 #include "MotorController.h"

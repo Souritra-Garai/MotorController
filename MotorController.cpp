@@ -17,11 +17,14 @@ MotorController::MotorController(
     ), PID(update_frequency),
     // Initialize const variables
     direction_pin_(direction_pin),
-    reverse_(reverse)
+    reverse_(reverse ? -1.0 : 1.0)
 {
-    // Initialize angular_velocity and PID output to zero
+    // Initialize internal variables
+	max_controller_output_ = 255; // By default most boards support 8 bit PWM
     angular_velocity_ = 0;
-    PID_output_ = 0;
+	
+	PID_output_ = 0;
+	feed_forward_output_ = 0;
 
     // Initialise the data direction for direction pin to
     // output
@@ -47,8 +50,7 @@ void MotorController::enablePIDControl()
     PID_control_enable_ = true;
 }
 
-float MotorController::getMotorAngularVelocity()
+float MotorController::setMaxControllerOutput(float max_controller_output)
 {
-    // Return the last computed copy of angular velocity
-    return angular_velocity_;
+	max_controller_output_ = max_controller_output;
 }

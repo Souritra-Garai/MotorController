@@ -80,7 +80,7 @@ void loop()
     Serial.println(motor_controller.getMotorAngularVelocity());
 
     Serial.print("PID output:\t");
-    Serial.println(motor_controller.getPIDControlOutput());
+    Serial.println(motor_controller.getControllerOutput());
 
     Serial.print("Error: ");
     Serial.println(motor_controller.getError());
@@ -137,5 +137,5 @@ ISR(TIMER3_COMPA_vect)
 {
   motor_controller.updateAngularVelocity();
   motor_controller.spinMotor();
-  Timer1PhaseCorrectPWM::setDutyCyclePWMChannelA(motor_controller.getPIDControlOutput());
+  Timer1PhaseCorrectPWM::setDutyCyclePWMChannelA(motor_controller.getControllerOutput());
 }

@@ -16,22 +16,22 @@
 // Required for digital Write function
 #include <Arduino.h>
 
-// Required for AngularVelocityCalculator class
+// Required for AngularState class
 #include "AngularState.h"
 
 // Required for PID class
 #include "PID.h"
 
 // Modify this according to the PWM resolution available
-#define MAX_PWM_DUTY_CYCLE_INPUT 32767.0f
+#define MAX_PWM_DUTY_CYCLE_INPUT 255.0f
 
 /**
  * @brief Class to control a DC motor with rotary encoder attached to its
  * shaft
  * 
- * It derives from the classes AngularVelocityCalculator and PID
+ * It derives from the classes AngularState and PID
  */
-class MotorController : public AngularVelocityCalculator, public PID
+class MotorController : public AngularState, private PID
 {
     private:
         
@@ -43,7 +43,7 @@ class MotorController : public AngularVelocityCalculator, public PID
         /**
          * @brief Truth value whether to reverse direction pin logic
          */
-        const bool reverse_;
+        const float reverse_;
 
         /**
          * @brief Variable for storing angular velocity
@@ -61,16 +61,18 @@ class MotorController : public AngularVelocityCalculator, public PID
          */
         bool PID_control_enable_;
 
+		float max_controller_output_;
+
+		float feed_forward_output_;
+
+		bool feed_forward_control_enable_;
+
     public :
 
         /**
          * @brief Stops the motor and disables PID controller
          */
         void stopMotor();
-
-        float target_angular_velocity = 0;
-
-        float scale = 1;
 
         /**
          * @brief Enable PID control for the motor
@@ -90,12 +92,13 @@ class MotorController : public AngularVelocityCalculator, public PID
         /**
          * @brief Get the latest calculated motor angular velocity
          * 
-         * The post-fix __attribute__((always_inline)) ensures
-         * the function is definitely inlined by compiler.
-         * 
          * @return float Angular velocity of the motor
          */
-        float getMotorAngularVelocity();
+        inline float getMotorAngularVelocity()
+		{
+			// Return the last computed copy of angular velocity
+			return reverse_ * angular_velocity_;
+		}
 
         /**
          * @brief Get the latest evaluated PID output
@@ -105,7 +108,7 @@ class MotorController : public AngularVelocityCalculator, public PID
          * 
          * @return float PID output
          */
-        inline float getPIDControlOutput() __attribute__((always_inline));
+        inline float getControllerOutput() __attribute__((always_inline));
 
         /**
          * @brief Construct a new Motor Controller object
@@ -128,6 +131,13 @@ class MotorController : public AngularVelocityCalculator, public PID
             float counts_per_rotation,
             bool reverse = false
         );
+
+		inline void setMotorAngularVelocity(float target_angular_velocity)
+		{
+			setTargetStateValue(reverse_ * target_angular_velocity);
+		}
+
+		void setMaxControllerOutput(float max_controller_ouput);
 };
 
 /*=====================================================================================================*/
@@ -145,19 +155,19 @@ void MotorController::spinMotor()
     if (PID_control_enable_)
     {
         // Calculate the PID output and round it off to closest integer (for PWM output)
-        PID_output_ =  round(getControllerOutput(angular_velocity_));
+        PID_output_ =  round(getPIDControllerOutput(angular_velocity_));
         
         // Write a HIGH or LOW value to the direction pin on the motor driver 
         // depending on the sign of PID output
-        digitalWrite(direction_pin_, PID_output_ > 0 ? reverse_^true : reverse_^false);
+        digitalWrite(direction_pin_, PID_output_ > 0 ? true : false);
     }
 }
 
-float MotorController::getPIDControlOutput()
+float MotorController::getControllerOutput()
 {
     // Set the duty cycle of PWM ouput to motor driver to the absolute value
     // of PID output. The value needs to be within 0xFFFF = (65535)_{10}
-	return min(abs(PID_output_), 32500.0f);
+	return min(abs(PID_output_), MAX_PWM_DUTY_CYCLE_INPUT);
 }
 
 #endif

@@ -97,7 +97,7 @@ class PID
          * @param current_state_value current value of the state variable
          * @return float PID control output
          */
-        inline float getControllerOutput(float current_state_value) __attribute__((always_inline));
+        inline float getPIDControllerOutput(float current_state_value) __attribute__((always_inline));
 
         /**
          * @brief Get the error calculated in the last iteration
@@ -131,7 +131,7 @@ class PID
 
 // Evaluate and return the PID control output
 // Also update the integral error, last error and last state value
-float PID::getControllerOutput(float current_state_value)
+float PID::getPIDControllerOutput(float current_state_value)
 {
     // Evaluate the error at the current iteration
     float current_error = target_state_value_ - current_state_value;
