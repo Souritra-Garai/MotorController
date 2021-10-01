@@ -11,7 +11,15 @@ print('Socket server started listening')
 
 data = []
 
-client, addr = s.accept()
+try :
+	
+	client, addr = s.accept()
+
+except :
+
+	print('\n')
+	s.close()
+	exit(1)
 
 try :
     
@@ -27,8 +35,9 @@ try :
  
 except KeyboardInterrupt:
 
-    print("\nClosing connection")
-    client.close()
+	print("\nClosing connection")
+	client.close()
+	s.close()
 
 data = np.array(data, dtype=float)
 np.savetxt('Motor PWM Duty Cycle Response.csv', data, delimiter=',')
