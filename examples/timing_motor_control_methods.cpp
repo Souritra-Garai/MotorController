@@ -103,7 +103,7 @@ void setup()
 	last_serial_print_time			= current_time;
 	
 	// Set motor controller target to 10 rad/s
-	motor_controller.setTargetStateValue(10);
+	motor_controller.setMotorAngularVelocity(10);
 
 	Serial.println("Initialized successfully");
 }
@@ -114,7 +114,7 @@ void loop()
 
 	if (current_time - last_control_routine_call_time > 1E6/CONTROL_ROUTINE_CALL_FREQUENCY)
 	{
-		motor_controller.updateAngularVelocity();
+		motor_controller.updateAngularState();
 
 		start_time = micros();
 		motor_controller.spinMotor();

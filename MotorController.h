@@ -22,16 +22,13 @@
 // Required for PID class
 #include "PID.h"
 
-// Modify this according to the PWM resolution available
-#define MAX_PWM_DUTY_CYCLE_INPUT 255.0f
-
 /**
  * @brief Class to control a DC motor with rotary encoder attached to its
  * shaft
  * 
  * It derives from the classes AngularState and PID
  */
-class MotorController : public AngularState, private PID
+class MotorController : public AngularState, public PID
 {
     private:
         
@@ -138,6 +135,16 @@ class MotorController : public AngularState, private PID
 		}
 
 		void setMaxControllerOutput(float max_controller_ouput);
+
+		inline float getPIDOutput()
+		{
+			return PID_output_;
+		}
+
+		inline float getFeedForwardOutput()
+		{
+			return feed_forward_output_;
+		}
 };
 
 /*=====================================================================================================*/
@@ -167,7 +174,7 @@ float MotorController::getControllerOutput()
 {
     // Set the duty cycle of PWM ouput to motor driver to the absolute value
     // of PID output. The value needs to be within 0xFFFF = (65535)_{10}
-	return min(abs(PID_output_), MAX_PWM_DUTY_CYCLE_INPUT);
+	return min(abs(PID_output_ + feed_forward_output_), max_controller_output_);
 }
 
 #endif

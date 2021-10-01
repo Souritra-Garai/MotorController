@@ -9,7 +9,7 @@ MotorController::MotorController(
     float counts_per_rotation,
     bool reverse
 ) : // Call base class constructors
-    AngularVelocityCalculator(
+    AngularState(
         encoder_pin_1,
         encoder_pin_2,
         update_frequency,
@@ -50,7 +50,7 @@ void MotorController::enablePIDControl()
     PID_control_enable_ = true;
 }
 
-float MotorController::setMaxControllerOutput(float max_controller_output)
+void MotorController::setMaxControllerOutput(float max_controller_output)
 {
 	max_controller_output_ = max_controller_output;
 }

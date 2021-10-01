@@ -21,14 +21,14 @@
 
 // This pin is attached to PWM input of
 // motor driver to control speed
-#define PWM_PIN D1
+#define PWM_PIN D2
 // This pin is attached to direction control
 // input of motor driver
-#define DIRECTION_PIN D3
+#define DIRECTION_PIN D4
 // Encoder outputs attached to these
 // interrupt pins
-#define ENCODER_PIN_A D5
-#define ENCODER_PIN_B D6
+#define ENCODER_PIN_A D6
+#define ENCODER_PIN_B D5
 
 // Frequency at which control loop will be run
 #define CONTROL_ROUTINE_CALL_FREQUENCY 50 // Hz
@@ -48,7 +48,8 @@ MotorController motor_controller(
   ENCODER_PIN_A,
   ENCODER_PIN_B,
   CONTROL_ROUTINE_CALL_FREQUENCY,
-  ENCODER_COUNTS_PER_ROTATION
+  ENCODER_COUNTS_PER_ROTATION,
+  true
 );
 
 // Variable to fetch and store the current time
@@ -73,9 +74,9 @@ void setup()
 	// Should be between 5 ~ 15 kHz
 	analogWriteFreq(10E3);
 	// Bit-Resolution for representing PWM Duty cycle
-	analogWriteResolution(8);
+	analogWriteResolution(15);
 	// Set max controller output according to bit resolution of PWM Duty cycle
-	motor_controller.setMaxControllerOutput((1 << 8) - 1);
+	motor_controller.setMaxControllerOutput((1 << 15) - 1);
 
 	// Initialize motor controller
 	motor_controller.setPIDGains(3500, 1250, 2);
@@ -88,7 +89,7 @@ void setup()
 	last_serial_print_time			= current_time;
 
 	// Set motor controller target to 10 rad/s
-	motor_controller.setTargetStateValue(10);
+	motor_controller.setMotorAngularVelocity(10);
 
 	Serial.println("Initialized successfully");
 }
@@ -99,7 +100,7 @@ void loop()
 
 	if (current_time - last_control_routine_call_time > 1E6/CONTROL_ROUTINE_CALL_FREQUENCY)
 	{
-		motor_controller.updateAngularVelocity();
+		motor_controller.updateAngularState();
 		motor_controller.spinMotor();
 
 		analogWrite(PWM_PIN, motor_controller.getControllerOutput());
