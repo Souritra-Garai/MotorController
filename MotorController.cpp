@@ -24,7 +24,6 @@ MotorController::MotorController(
     angular_velocity_ = 0;
 	
 	PID_output_ = 0;
-	feed_forward_output_ = 0;
 
     // Initialise the data direction for direction pin to
     // output

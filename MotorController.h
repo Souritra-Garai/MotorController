@@ -22,13 +22,15 @@
 // Required for PID class
 #include "PID.h"
 
+#include "FeedForward.h"
+
 /**
  * @brief Class to control a DC motor with rotary encoder attached to its
  * shaft
  * 
  * It derives from the classes AngularState and PID
  */
-class MotorController : public AngularState, public PID
+class MotorController : public AngularState, public PID, public FeedForward
 {
     private:
         
@@ -59,10 +61,6 @@ class MotorController : public AngularState, public PID
         bool PID_control_enable_;
 
 		float max_controller_output_;
-
-		float feed_forward_output_;
-
-		bool feed_forward_control_enable_;
 
     public :
 
@@ -132,6 +130,7 @@ class MotorController : public AngularState, public PID
 		inline void setMotorAngularVelocity(float target_angular_velocity)
 		{
 			setTargetStateValue(reverse_ * target_angular_velocity);
+			setTargetStateValue_FF(reverse_ * target_angular_velocity);
 		}
 
 		void setMaxControllerOutput(float max_controller_ouput);
@@ -139,11 +138,6 @@ class MotorController : public AngularState, public PID
 		inline float getPIDOutput()
 		{
 			return PID_output_;
-		}
-
-		inline float getFeedForwardOutput()
-		{
-			return feed_forward_output_;
 		}
 };
 
@@ -162,11 +156,11 @@ void MotorController::spinMotor()
     if (PID_control_enable_)
     {
         // Calculate the PID output and round it off to closest integer (for PWM output)
-        PID_output_ =  round(getPIDControllerOutput(angular_velocity_));
+        PID_output_ =  getPIDControllerOutput(angular_velocity_);
         
         // Write a HIGH or LOW value to the direction pin on the motor driver 
         // depending on the sign of PID output
-        digitalWrite(direction_pin_, PID_output_ > 0 ? true : false);
+        digitalWrite(direction_pin_, signbit(PID_output_ + getFeedForwardControllerOutput()));
     }
 }
 
@@ -174,7 +168,7 @@ float MotorController::getControllerOutput()
 {
     // Set the duty cycle of PWM ouput to motor driver to the absolute value
     // of PID output. The value needs to be within 0xFFFF = (65535)_{10}
-	return min(abs(PID_output_ + feed_forward_output_), max_controller_output_);
+	return min(abs(round(PID_output_ + getFeedForwardControllerOutput())), max_controller_output_);
 }
 
 #endif
