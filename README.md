@@ -8,7 +8,7 @@ Directory Structure:
 ```
 +---  project/
 |     +---  lib/
-|	  |     +---  AngularState/
+|     |     +---  AngularState/
 |     |     +---  MotorController/
 |     |     |     +--- MotorController.cpp
 |     |     |     +--- MotorController.h
